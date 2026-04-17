@@ -7,10 +7,11 @@ Original file is located at
     https://colab.research.google.com/drive/1rJV6_6VPRxmWZKr3k6r4sJxbWKsrVMXZ
 """
 
-!pip install nba_api
+# !pip install nba_api
 
 import pandas as pd
 import time
+import os
 from nba_api.stats.endpoints import leaguedashplayerbiostats, leaguedashplayerclutch
 
 # Define the 12-season scope: 2012-13 to 2023-24
@@ -143,8 +144,18 @@ final_df = merged_df[merged_df['MIN'] >= 10].copy()
 
 print(f"Feature engineering complete. Filtered out low-minute noise.")
 
+# --- PROJECT DELIVERABLE: SAVE CLEAN CSV ---
+final_df.to_csv("G6_Cleaned_NBA_Clutch_Data.csv", index=False)
+print("Cleaned data saved to G6_Cleaned_NBA_Clutch_Data.csv!")
+
+
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+# --- SETUP SAVE FOLDER ---
+save_dir = r"C:\Users\MARIELLA\OneDrive\Documents\DataViz\ugly chart"
+os.makedirs(save_dir, exist_ok=True)
+print(f"\nGenerating 10 charts inline and saving JPEGs to: {save_dir}\n")
 
 # 1. Select ONLY the columns relevant to your proposal
 cols_to_plot = ['PLAYER_HEIGHT_INCHES', 'PLAYER_WEIGHT', 'BMI', 'MIN', 'PTS', 'PTS_PER_MIN', 'PLUS_MINUS']
@@ -153,13 +164,104 @@ subset_corr = final_df[cols_to_plot].corr()
 # 2. Make the canvas larger (width, height)
 plt.figure(figsize=(10, 8))
 
-# 3. Plot the heatmap
-# Using 'coolwarm' cmap makes positive correlations red and negative ones blue
+# 3. Plot the heatmap (CHART 1)
 sns.heatmap(subset_corr,
             annot=True,        # Show the numbers
             cmap='coolwarm',   # Better color scale
             fmt=".2f",         # Round to 2 decimal places so numbers fit
             vmin=-1, vmax=1)   # Anchor the color scale from -1 to 1
 
-plt.title("Correlation: Physical Traits vs. Clutch Performance")
+plt.title("Chart 1: Correlation: Physical Traits vs. Clutch Performance")
+plt.savefig(os.path.join(save_dir, "Chart_01_Heatmap.jpeg"), format='jpeg', bbox_inches='tight')
 plt.show()
+
+# --- THE REMAINING 9 EXPLORATORY CHARTS ---
+
+# Chart 2: Scatter Plot of Height vs Weight
+plt.figure(figsize=(8, 5))
+plt.scatter(final_df['PLAYER_HEIGHT_INCHES'], final_df['PLAYER_WEIGHT'], alpha=0.5, color='blue')
+plt.title("Chart 2: Height vs Weight in Clutch Situations")
+plt.xlabel("Height (Inches)")
+plt.ylabel("Weight (lbs)")
+plt.savefig(os.path.join(save_dir, "Chart_02_Height_Weight.jpeg"), format='jpeg', bbox_inches='tight')
+plt.show()
+
+# Chart 3: Histogram of Points Per Minute (Efficiency)
+plt.figure(figsize=(8, 5))
+final_df['PTS_PER_MIN'].hist(bins=20, color='orange')
+plt.title("Chart 3: Distribution of Clutch Points Per Minute")
+plt.xlabel("Points Per Minute")
+plt.ylabel("Number of Players")
+plt.savefig(os.path.join(save_dir, "Chart_03_Efficiency_Hist.jpeg"), format='jpeg', bbox_inches='tight')
+plt.show()
+
+# Chart 4: Boxplot of Plus/Minus by Physical Archetype
+plt.figure(figsize=(8, 5))
+sns.boxplot(x='PHYSICAL_ARCHETYPE', y='PLUS_MINUS', hue='PHYSICAL_ARCHETYPE', data=final_df, palette='Set2', legend=False)
+plt.title("Chart 4: Clutch Plus/Minus by Physical Build")
+plt.xlabel("Physical Archetype")
+plt.ylabel("Plus/Minus")
+plt.xticks(rotation=15)
+plt.savefig(os.path.join(save_dir, "Chart_04_Archetype_Boxplot.jpeg"), format='jpeg', bbox_inches='tight')
+plt.show()
+
+# Chart 5: Scatter Plot of Minutes Played vs Total Points
+plt.figure(figsize=(8, 5))
+plt.scatter(final_df['MIN'], final_df['PTS'], alpha=0.5, color='green')
+plt.title("Chart 5: Clutch Minutes vs Total Clutch Points")
+plt.xlabel("Minutes Played (Clutch)")
+plt.ylabel("Total Points")
+plt.savefig(os.path.join(save_dir, "Chart_05_Min_vs_Pts.jpeg"), format='jpeg', bbox_inches='tight')
+plt.show()
+
+# Chart 6: Average BMI over the Seasons (Trend)
+plt.figure(figsize=(8, 5))
+seasonal_bmi = final_df.groupby('SEASON_START_YEAR')['BMI'].mean().reset_index()
+plt.plot(seasonal_bmi['SEASON_START_YEAR'], seasonal_bmi['BMI'], marker='o', color='purple')
+plt.title("Chart 6: Average Player BMI in the Clutch (2012-2023)")
+plt.xlabel("Season Start Year")
+plt.ylabel("Average BMI")
+plt.grid(True)
+plt.savefig(os.path.join(save_dir, "Chart_06_BMI_Trend.jpeg"), format='jpeg', bbox_inches='tight')
+plt.show()
+
+# Chart 7: Histogram of BMI Distribution
+plt.figure(figsize=(8, 5))
+sns.histplot(final_df['BMI'], kde=True, color='teal')
+plt.title("Chart 7: Distribution of Player BMI")
+plt.xlabel("BMI")
+plt.ylabel("Frequency")
+plt.savefig(os.path.join(save_dir, "Chart_07_BMI_Hist.jpeg"), format='jpeg', bbox_inches='tight')
+plt.show()
+
+# Chart 8: Scatter Plot of BMI vs Clutch Efficiency
+plt.figure(figsize=(8, 5))
+plt.scatter(final_df['BMI'], final_df['PTS_PER_MIN'], alpha=0.5, color='red')
+plt.title("Chart 8: Does BMI Affect Scoring Efficiency?")
+plt.xlabel("BMI")
+plt.ylabel("Points Per Minute")
+plt.savefig(os.path.join(save_dir, "Chart_08_BMI_vs_Efficiency.jpeg"), format='jpeg', bbox_inches='tight')
+plt.show()
+
+# Chart 9: Total Clutch Points Scored by Season
+plt.figure(figsize=(10, 5))
+seasonal_pts = final_df.groupby('SEASON')['PTS'].sum().reset_index()
+sns.barplot(x='SEASON', y='PTS', hue='SEASON', data=seasonal_pts, palette='viridis', legend=False)
+plt.title("Chart 9: Total League Clutch Points by Season")
+plt.xlabel("Season")
+plt.ylabel("Total Points")
+plt.xticks(rotation=45)
+plt.savefig(os.path.join(save_dir, "Chart_09_Seasonal_Points.jpeg"), format='jpeg', bbox_inches='tight')
+plt.show()
+
+# Chart 10: Clutch Minutes vs Plus/Minus
+plt.figure(figsize=(8, 5))
+plt.scatter(final_df['MIN'], final_df['PLUS_MINUS'], alpha=0.4, color='brown')
+plt.axhline(0, color='black', linestyle='--')
+plt.title("Chart 10: Do More Minutes Equal a Better Plus/Minus?")
+plt.xlabel("Clutch Minutes Played")
+plt.ylabel("Plus/Minus")
+plt.savefig(os.path.join(save_dir, "Chart_10_Min_vs_PlusMinus.jpeg"), format='jpeg', bbox_inches='tight')
+plt.show()
+
+print("All 10 charts successfully generated inline and saved as JPEGs!")
