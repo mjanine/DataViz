@@ -74,7 +74,7 @@ era_df = df[
     (df['SEASON_START_YEAR'] <= selected_years[1])
 ]
 
-# Force Matplotlib to use a dark theme so text/axes match Streamlit!
+# Force Matplotlib to use a dark theme so text/axes match Streamlit
 plt.style.use('dark_background')
 
 col1, col2 = st.columns(2)
@@ -93,16 +93,16 @@ with col1:
         era_df,
         x='BMI',
         y='PTS_PER_MIN',
-        hover_data=hover_cols, # This is the magic line that adds tooltips!
+        hover_data=hover_cols,
         color_discrete_sequence=['#00b4d8'],
         opacity=0.5,
-        trendline="ols", # Adds the regression line automatically
+        trendline="ols",
         trendline_color_override='#ff006e',
         title=f"BMI vs Scoring Efficiency ({selected_years[0]}-{selected_years[1]})",
         labels={"BMI": "Body Mass Index (BMI)", "PTS_PER_MIN": "Clutch Points Per Minute"}
     )
 
-    # Force background to be transparent so it matches your dark mode app
+    # Force background to be transparent
     fig1.update_layout(
         plot_bgcolor="rgba(0,0,0,0)", 
         paper_bgcolor="rgba(0,0,0,0)",
@@ -123,6 +123,7 @@ with col1:
         story = f"The trend flips **({era_corr:.2f})**. Higher BMI reduced efficiency, suggesting quicker players dominated clutch moments."
 
     st.info(f"**Dynamic Insight ({selected_years[0]}-{selected_years[1]}):** {story}", icon="📊")
+
 # --------------------------
 # HEATMAP
 # --------------------------
@@ -144,15 +145,15 @@ with col2:
     # Glow-up: Interactive Plotly Heatmap
     fig2 = px.imshow(
         corr_data,
-        text_auto=".2f", # Puts the exact correlation numbers inside the boxes
+        text_auto=".2f",
         aspect="auto",
-        color_continuous_scale="Tealgrn", # A sleek blue/green dark-mode palette
+        color_continuous_scale="Tealgrn",
         zmin=-1, 
         zmax=1,
         title=f"Metric Correlations ({selected_years[0]}-{selected_years[1]})"
     )
 
-    # Force background to be transparent and match the app
+    # Force background to be transparent
     fig2.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
@@ -162,10 +163,7 @@ with col2:
     # Draw the interactive chart
     st.plotly_chart(fig2, theme="streamlit", width='stretch')
 
-    # Dynamic Heatmap Narrative in a Professional Box
-    pm_weight_corr = corr_data.loc['PLUS_MINUS', 'PLAYER_WEIGHT']
-
-   # --- DYNAMIC NARRATIVE ---
+    # --- DYNAMIC NARRATIVE ---
     pm_weight_corr = corr_data.loc['PLUS_MINUS', 'PLAYER_WEIGHT']
 
     if pm_weight_corr > 0.15:
@@ -180,7 +178,8 @@ with col2:
         f"Look at the Weight vs. Plus/Minus square. {heatmap_story}",
         icon="🔍"
     )
-    # ==========================================
+
+# ==========================================
 # FINAL CONCLUSION (DYNAMIC SYNTHESIS)
 # ==========================================
 st.divider()
